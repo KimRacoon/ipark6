@@ -194,6 +194,7 @@ body{background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","맑은 �
 <section id="out" hidden>
   <img id="outImg" alt="작성된 동의서">
   <div class="to" style="word-break:keep-all">저장한 이미지를 <b>sungsungtiger@gmail.com</b> 으로<br>보내주시거나, 아래 카톡링크를 통해 보내주세요.</div>
+  <div class="to" id="iosHint" hidden style="font-size:12.5px;color:#666;margin-top:6px;word-break:keep-all">아이폰은 「이미지 저장」을 누르면 공유창이 열립니다. 거기서 <b>「이미지 저장」</b>을 고르면 사진 앱에 저장되고, <b>카카오톡</b>을 고르면 바로 보낼 수 있습니다.</div>
   <div class="actions row">
     <button class="btn sec" id="back">뒤로가기</button>
     <button class="btn pri" id="save">이미지 저장</button>
@@ -349,6 +350,7 @@ $("go").onclick=async()=>{
     fname=`동의서_${$("dong").value}동${$("ho").value}호.png`;
     const url=URL.createObjectURL(blob);
     $("outImg").src=url; $("dl").href=url; $("dl").download=fname;
+    $("iosHint").hidden=!/iP(hone|ad|od)/.test(navigator.userAgent);
     $("form").hidden=true; $("out").hidden=false; window.scrollTo({top:0,behavior:"instant"});
   }catch(e){
     console.error(e); $("err").textContent="이미지를 만들지 못했습니다. 다시 시도해 주세요.";
