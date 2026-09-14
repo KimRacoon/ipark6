@@ -223,7 +223,7 @@ body{background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","맑은 �
 <script>
 const $=id=>document.getElementById(id);
 const doc=$("doc");
-const KAKAO_URL="";   // ★ 입예협 오픈채팅 링크 — 생기면 여기에만 넣으면 된다 (예: "https://open.kakao.com/o/xxxx")
+const KAKAO_URL="https://open.kakao.com/o/shIlSwNi";   // ★ 입예협 오픈채팅 링크 — 바뀌면 여기만 고친다
 (()=>{ const k=$("kakao"); if(KAKAO_URL){ k.href=KAKAO_URL; k.target="_blank"; k.rel="noopener"; } else { k.href="#"; k.onclick=e=>{ e.preventDefault(); alert("카카오톡 링크는 준비 중입니다."); }; } })();
 
 /* ── 입력 ↔ 렌더 값 동기화 ── */
