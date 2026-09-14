@@ -194,7 +194,9 @@ body{background:var(--bg);color:var(--ink);font-family:"Malgun Gothic","맑은 �
 <section id="out" hidden>
   <img id="outImg" alt="작성된 동의서">
   <div class="to" style="word-break:keep-all">저장한 이미지를 <b>sungsungtiger@gmail.com</b> 으로<br>보내주시거나, 아래 카톡링크를 통해 보내주세요.</div>
-  <div class="to" id="iosHint" hidden style="font-size:12.5px;color:#666;margin-top:6px;word-break:keep-all">아이폰은 「이미지 저장」을 누르면 공유창이 열립니다. 거기서 <b>「이미지 저장」</b>을 고르면 사진 앱에 저장되고, <b>카카오톡</b>을 고르면 바로 보낼 수 있습니다.</div>
+  <div class="to" id="iosHint" hidden style="font-size:12.5px;color:#666;margin-top:6px;word-break:keep-all">아이폰: 「이미지 저장」을 누르면 공유창이 열립니다. <b>「이미지 저장」</b>을 고르면 사진 앱에 저장됩니다.<br>저장이 안 되면 <b>위 이미지를 길게 눌러 「사진에 저장」</b>을 누르세요.</div>
+  <div class="to" id="inappHint" hidden style="font-size:12.5px;color:#c62828;margin-top:6px;word-break:keep-all">카카오톡 안에서 열린 화면입니다. 저장이 안 되면 <b>위 이미지를 길게 눌러 저장</b>하거나, 오른쪽 아래 <b>⋯ → 다른 브라우저로 열기</b>를 눌러 주세요.</div>
+  <div class="to" id="lpHint" hidden style="font-size:14px;color:#c62828;font-weight:700;margin-top:8px;word-break:keep-all">▲ 위 이미지를 <u>길게 누른 뒤</u> 「사진에 저장」(또는 「이미지 저장」)을 누르세요.</div>
   <div class="actions row">
     <button class="btn sec" id="back">뒤로가기</button>
     <button class="btn pri" id="save">이미지 저장</button>
@@ -328,7 +330,9 @@ function validate(){
 }
 
 /* ── 이미지 생성 → 결과 페이지 ── */
-let blob=null, fname="consent.png";
+let blob=null, dataURL=null, fname="consent.png";
+const isIOS=/iP(hone|ad|od)/.test(navigator.userAgent);
+const isInApp=/KAKAOTALK|NAVER\(inapp|Instagram|FBAN|FBAV|Line\//i.test(navigator.userAgent);
 $("go").onclick=async()=>{
   if(!validate()) return;
   if(typeof html2canvas!=="function"){ $("err").textContent="이미지 생성 도구를 불러오지 못했습니다. 인터넷 연결을 확인하고 새로고침해 주세요."; return; }
@@ -348,9 +352,10 @@ $("go").onclick=async()=>{
       }});
     blob=await new Promise(r=>canvas.toBlob(r,"image/png"));
     fname=`동의서_${$("dong").value}동${$("ho").value}호.png`;
-    const url=URL.createObjectURL(blob);
-    $("outImg").src=url; $("dl").href=url; $("dl").download=fname;
-    $("iosHint").hidden=!/iP(hone|ad|od)/.test(navigator.userAgent);
+    // data: URL 로 넣는다 — 아이폰·카톡 인앱브라우저에서도 이미지를 길게 눌러 「사진에 저장」이 되고, blob: 다운로드가 멈추는 문제를 피한다
+    dataURL=canvas.toDataURL("image/png");
+    $("outImg").src=dataURL; $("dl").href=dataURL; $("dl").download=fname;
+    $("iosHint").hidden=!isIOS; $("inappHint").hidden=!isInApp;
     $("form").hidden=true; $("out").hidden=false; window.scrollTo({top:0,behavior:"instant"});
   }catch(e){
     console.error(e); $("err").textContent="이미지를 만들지 못했습니다. 다시 시도해 주세요.";
@@ -359,7 +364,13 @@ $("go").onclick=async()=>{
   }
 };
 $("back").onclick=()=>{ $("out").hidden=true; $("form").hidden=false; window.scrollTo({top:0,behavior:"instant"}); };
-/* 저장: 공유창(사진에 저장·Gmail 첨부)이 가능하면 그것으로, 아니면 파일 내려받기 */
+/* 저장: 공유창(사진에 저장·카톡·Gmail)이 가능하면 그것으로.
+   안 되면 — 아이폰·인앱브라우저는 파일 다운로드가 「다운로드 중」에서 멈추므로 — 이미지를 길게 눌러 저장하도록 안내한다 */
+function longPressGuide(){
+  const g=$("lpHint"); g.hidden=false;
+  $("outImg").scrollIntoView({behavior:"smooth",block:"center"});
+  $("outImg").style.outline="3px solid #c62828"; setTimeout(()=>{ $("outImg").style.outline=""; },2500);
+}
 $("save").onclick=async()=>{
   if(!blob) return;
   const file=new File([blob],fname,{type:"image/png"});
@@ -367,6 +378,7 @@ $("save").onclick=async()=>{
     try{ await navigator.share({files:[file],title:"유상옵션 신청 유예 동의서"}); return; }
     catch(e){ if(e&&e.name==="AbortError") return; }
   }
+  if(isIOS||isInApp){ longPressGuide(); return; }
   $("dl").click();
 };
 syncAll();
